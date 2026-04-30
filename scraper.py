@@ -25,6 +25,8 @@ from parsers import get_parser
 
 logger = logging.getLogger(__name__)
 
+REQUEST_TIMEOUT = 20
+
 
 class ArticleStateEnum(IntEnum):
     NEW = 0
@@ -80,7 +82,7 @@ class InfoTsinghuaScraper:
         self._session.headers.update({"User-Agent": USER_AGENT})
 
         # Visit the list page to get cookies and CSRF token
-        response = self._session.get(self.LIST_URL)
+        response = self._session.get(self.LIST_URL, timeout=REQUEST_TIMEOUT)
         response.raise_for_status()
 
         # Extract CSRF token from meta tag
@@ -143,7 +145,10 @@ class InfoTsinghuaScraper:
 
         self._rate_limit()
         response = self._session.post(
-            self.LIST_API, params=params, headers=headers
+            self.LIST_API,
+            params=params,
+            headers=headers,
+            timeout=REQUEST_TIMEOUT,
         )
         response.raise_for_status()
         data = response.json()
@@ -177,7 +182,9 @@ class InfoTsinghuaScraper:
         }
 
         self._rate_limit()
-        response = self._session.get(url, headers=headers, allow_redirects=True)
+        response = self._session.get(
+            url, headers=headers, allow_redirects=True, timeout=REQUEST_TIMEOUT
+        )
         response.raise_for_status()
         html = response.text
 

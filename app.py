@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -147,15 +148,17 @@ async def lifespan(app: FastAPI):
         replace_existing=True,
     )
 
-    # Run initial scrape
-    await scrape_articles()
-
     scheduler.start()
     logger.info(f"Scheduler started, scraping every {SCRAPE_INTERVAL} seconds")
+
+    # Run the initial scrape in the background so the HTTP server can start immediately.
+    initial_scrape_task = asyncio.create_task(scrape_articles())
 
     yield
 
     # Shutdown
+    if not initial_scrape_task.done():
+        initial_scrape_task.cancel()
     scheduler.shutdown()
     logger.info("Scheduler shutdown")
 
