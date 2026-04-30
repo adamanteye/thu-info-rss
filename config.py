@@ -14,7 +14,7 @@ load_dotenv()
 # =============================================================================
 
 APP_NAME = "InfoTsinghuaRSS"
-APP_VERSION = "0.1.0"
+APP_VERSION = "0.1.1"
 USER_AGENT = f"{APP_NAME}/{APP_VERSION}"
 
 
@@ -67,7 +67,7 @@ RSS_CACHE_MAX_AGE = 300  # 5 minutes
 
 API_TITLE = "Tsinghua Info RSS"
 API_DESCRIPTION = "RSS feed for Tsinghua University Info Portal"
-API_VERSION = "0.1.0"
+API_VERSION = "0.1.1"
 SERVER_HOST = "::"
 SERVER_PORT = 8000
 

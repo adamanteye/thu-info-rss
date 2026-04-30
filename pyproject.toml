@@ -1,16 +1,16 @@
 [project]
-name = "info-scraper-rss"
-version = "0.1.0"
+name = "thu-info-rss"
+version = "0.1.1"
 description = "RSS feed generator for Tsinghua University Info Portal"
 requires-python = ">=3.10"
 dependencies = [
-    "requests>=2.31.0",
-    "fastapi>=0.109.0",
-    "uvicorn[standard]>=0.27.0",
-    "feedgenerator>=2.1.0",
-    "apscheduler>=3.10.4",
-    "beautifulsoup4>=4.12.0",
-    "python-dotenv>=1.0.0",
+  "requests>=2.31.0",
+  "fastapi>=0.109.0",
+  "uvicorn[standard]>=0.27.0",
+  "feedgenerator>=2.1.0",
+  "apscheduler>=3.10.4",
+  "beautifulsoup4>=4.12.0",
+  "python-dotenv>=1.0.0",
 ]
 
 [project.optional-dependencies]
@@ -34,39 +34,39 @@ line-length = 100
 
 # Exclude directories
 exclude = [
-    ".git",
-    ".venv",
-    "__pycache__",
-    "*.egg-info",
-    ".eggs",
-    "*.pyc",
-    "build",
-    "dist",
+  ".git",
+  ".venv",
+  "__pycache__",
+  "*.egg-info",
+  ".eggs",
+  "*.pyc",
+  "build",
+  "dist",
 ]
 
 [tool.ruff.lint]
 # Enable pycodestyle (E, W), pyflakes (F), and isort (I)
 select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "I",   # isort
-    "B",   # flake8-bugbear
-    "C4",  # flake8-comprehensions
-    "UP",  # pyupgrade
-    "ARG", # flake8-unused-arguments
-    "SIM", # flake8-simplify
+  "E",   # pycodestyle errors
+  "W",   # pycodestyle warnings
+  "F",   # pyflakes
+  "I",   # isort
+  "B",   # flake8-bugbear
+  "C4",  # flake8-comprehensions
+  "UP",  # pyupgrade
+  "ARG", # flake8-unused-arguments
+  "SIM", # flake8-simplify
 ]
 
 # Ignore specific rules
 ignore = [
-    "E501",   # line too long (handled by formatter)
-    "B008",   # do not perform function calls in argument defaults
-    "B904",   # raise without from inside except
-    "UP007",  # X | Y style type hints (not ready for older Python)
-    "ARG001", # unused function argument (often used for interfaces)
-    "ARG002", # unused method argument (used in parser interfaces)
-    "ARG003", # unused class method argument (used in parser interfaces)
+  "E501",   # line too long (handled by formatter)
+  "B008",   # do not perform function calls in argument defaults
+  "B904",   # raise without from inside except
+  "UP007",  # X | Y style type hints (not ready for older Python)
+  "ARG001", # unused function argument (often used for interfaces)
+  "ARG002", # unused method argument (used in parser interfaces)
+  "ARG003", # unused class method argument (used in parser interfaces)
 ]
 
 # Allow autofix for all enabled rules
