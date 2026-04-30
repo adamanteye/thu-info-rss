@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: inforss
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - image: ghcr.io/adamanteye/thu-info-rss:0.1.1
+          name: inforss
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+              name: http
+          volumeMounts:
+            - name: data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteMany"]
+        storageClassName: nfs-retain
+        resources:
+          requests:
+            storage: 50Gi

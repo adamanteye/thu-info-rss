@@ -1,5 +1,5 @@
-# Single-stage build using uv official image
-FROM ghcr.io/astral-sh/uv:python3.13-trixie-slim
+# Single-stage Alpine build
+FROM python:3.13-alpine
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
   PYTHONUNBUFFERED=1 \
@@ -10,6 +10,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 # Set working directory
 WORKDIR /app
+
+# Install uv in Alpine
+RUN python -m pip install --no-cache-dir uv
 
 # Copy dependency files
 COPY pyproject.toml uv.lock ./
