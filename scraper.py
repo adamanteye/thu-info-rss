@@ -86,13 +86,16 @@ class InfoTsinghuaScraper:
         # Extract CSRF token from meta tag
         content = response.text
         csrf_match = re.search(
-            r'<meta\s+name=["\']_csrf["\']\s+content=["\']([a-z0-9\-]+)', content
+            r'<meta\s+name=["\']_csrf["\']\s+content=["\']([a-z0-9\-]+)',
+            content,
         )
         if csrf_match:
             self._csrf_token = csrf_match.group(1)
         else:
             # Try to find in script tags
-            script_match = re.search(r'_csrf\s*[:=]\s*["\']([a-z0-9\-]+)', content)
+            script_match = re.search(
+                r'_csrf\s*[:=]\s*["\']([a-z0-9\-]+)', content
+            )
             if script_match:
                 self._csrf_token = script_match.group(1)
             else:
@@ -139,7 +142,9 @@ class InfoTsinghuaScraper:
         }
 
         self._rate_limit()
-        response = self._session.post(self.LIST_API, params=params, headers=headers)
+        response = self._session.post(
+            self.LIST_API, params=params, headers=headers
+        )
         response.raise_for_status()
         data = response.json()
 
@@ -183,7 +188,9 @@ class InfoTsinghuaScraper:
         parser = get_parser(final_url, html)
 
         # Use the parser to extract content, passing session and CSRF token
-        parsed = parser.parse(final_url, html, session=self._session, csrf_token=self._csrf_token)
+        parsed = parser.parse(
+            final_url, html, session=self._session, csrf_token=self._csrf_token
+        )
         return {
             "title": parsed.get("title", ""),
             "content": parsed.get("content", ""),
@@ -226,7 +233,9 @@ class InfoTsinghuaScraper:
 
         return all_items
 
-    def upsert_article(self, item: dict[str, Any], fetch_content: bool = True) -> ArticleStateEnum:
+    def upsert_article(
+        self, item: dict[str, Any], fetch_content: bool = True
+    ) -> ArticleStateEnum:
         """Insert or update an article from a list item.
 
         Args:
@@ -244,7 +253,9 @@ class InfoTsinghuaScraper:
         # Validate required fields
         required_fields = ["xxid", "bt", "fbsj", "url"]
         missing_fields = [
-            field for field in required_fields if field not in item or not item[field]
+            field
+            for field in required_fields
+            if field not in item or not item[field]
         ]
         if missing_fields:
             raise ValueError(f"Missing required fields: {missing_fields}")
@@ -287,7 +298,9 @@ class InfoTsinghuaScraper:
                 )
                 logger.debug(f"Fetched full content for {item['xxid']}")
             except Exception as e:
-                logger.warning(f"Failed to fetch full content for {item['xxid']}: {e}")
+                logger.warning(
+                    f"Failed to fetch full content for {item['xxid']}: {e}"
+                )
                 # Continue with basic article info
 
         state = db_upsert(article)

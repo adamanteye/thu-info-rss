@@ -5,22 +5,11 @@ from __future__ import annotations
 import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from fastapi import Depends, FastAPI, HTTPException, Query, Response, status
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import FastAPI, Query, Response
+from fastapi.responses import HTMLResponse
 
-from auth import (
-    get_current_user,
-    get_current_user_from_path,
-    get_current_user_optional,
-    get_gitlab_authorization_url,
-    handle_gitlab_callback,
-)
-from auth_db import (
-    init_auth_db,
-)
 from config import (
     API_DESCRIPTION,
     API_TITLE,
@@ -28,15 +17,10 @@ from config import (
     MAX_PAGES_PER_RUN,
     MAX_RSS_ITEMS,
     MIN_SCRAPE_INTERVAL,
-    OAUTH_ENABLED,
-    RATE_LIMIT_WINDOW_HOUR,
-    RATE_LIMIT_WINDOW_SECOND,
     RSS_CACHE_MAX_AGE,
     SCRAPE_INTERVAL,
     SERVER_HOST,
     SERVER_PORT,
-    USER_RATE_LIMIT_PER_HOUR,
-    USER_RATE_LIMIT_PER_SECOND,
 )
 from database import (
     current_timestamp_ms,
@@ -45,7 +29,6 @@ from database import (
     init_db,
     set_last_scrape_time,
 )
-from rate_limit import check_rate_limit
 from rss import generate_rss, validate_category_input
 from scraper import ArticleStateEnum, InfoTsinghuaScraper
 
@@ -68,7 +51,9 @@ async def scrape_articles() -> None:
     now = current_timestamp_ms()
 
     if last_scrape:
-        time_since_last_scrape = (now - last_scrape) / 1000  # Convert to seconds
+        time_since_last_scrape = (
+            now - last_scrape
+        ) / 1000  # Convert to seconds
         if time_since_last_scrape < MIN_SCRAPE_INTERVAL:
             logger.info(
                 f"Skipping scrape: last scrape was {time_since_last_scrape:.1f} seconds ago (minimum: {MIN_SCRAPE_INTERVAL}s)"
@@ -81,7 +66,9 @@ async def scrape_articles() -> None:
         with InfoTsinghuaScraper() as scraper:
             # Calculate cutoff time: last_scrape - scrape_interval
             # We stop processing when we reach articles older than this
-            cutoff_time_ms = last_scrape - (SCRAPE_INTERVAL * 1000) if last_scrape else 0
+            cutoff_time_ms = (
+                last_scrape - (SCRAPE_INTERVAL * 1000) if last_scrape else 0
+            )
 
             new_count = 0
             updated_count = 0
@@ -149,7 +136,6 @@ async def lifespan(app: FastAPI):
     """Manage application lifespan."""
     # Initialize database
     init_db()
-    init_auth_db()
     logger.info("Database initialized")
 
     # Start scheduler
@@ -183,15 +169,13 @@ app = FastAPI(
 
 
 @app.get("/", response_class=HTMLResponse)
-async def root(
-    current_user: dict[str, Any] | None = Depends(get_current_user_optional),
-) -> Response:
-    """Root endpoint serving token management HTML."""
-    html_path = Path(__file__).parent / "templates" / "tokens.html"
+async def root() -> Response:
+    """Root endpoint serving the public RSS subscription page."""
+    html_path = Path(__file__).parent / "templates" / "index.html"
 
     if not html_path.exists():
         return Response(
-            content="<h1>Info Tsinghua RSS Feed</h1><p>Templates not found</p>",
+            content="<h1>Info Tsinghua RSS Feed</h1><p><a href='/rss'>Subscribe to RSS</a></p>",
             media_type="text/html",
         )
 
@@ -200,125 +184,17 @@ async def root(
 
 
 @app.get("/api/status")
-async def api_status(
-    current_user: dict[str, Any] | None = Depends(get_current_user_optional),
-) -> dict[str, Any]:
-    """API status endpoint for frontend authentication check."""
-    response = {
-        "auth_enabled": OAUTH_ENABLED,
-        "authenticated": current_user is not None,
-    }
-
-    if current_user:
-        response["user"] = {
-            "username": current_user["username"],
-            "email": current_user["email"],
-        }
-
-    return response
-
-
-# =============================================================================
-# OAuth Endpoints
-# =============================================================================
-
-
-@app.get("/auth/login")
-async def login():
-    """Redirect to GitLab OAuth login."""
-    if not OAUTH_ENABLED:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="OAuth authentication is not enabled",
-        )
-
-    auth_url = get_gitlab_authorization_url(redirect_path="/")
-    return RedirectResponse(auth_url)
-
-
-@app.get("/auth/callback")
-async def callback(code: str, state: str):
-    """Handle GitLab OAuth callback and redirect to GUI."""
-    if not OAUTH_ENABLED:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="OAuth authentication is not enabled",
-        )
-
-    result = await handle_gitlab_callback(code, state)
-
-    # Get existing token for user
-    from auth_db import create_or_reset_user_token, get_user_token
-
-    token = get_user_token(result["user_id"])
-
-    if not token:
-        # Create a new token
-        token = create_or_reset_user_token(result["user_id"])
-
-    # Redirect to frontend with token as query parameter
-    return RedirectResponse(url=f"/?token={token}&new=true")
-
-
-# =============================================================================
-# Token Management Endpoints
-# =============================================================================
-
-
-@app.get("/auth/tokens")
-async def list_tokens(
-    current_user: dict[str, Any] = Depends(get_current_user),
-) -> list[dict[str, Any]]:
-    """List all tokens for the current user."""
-    from auth_db import list_user_tokens
-
-    tokens = list_user_tokens(current_user["user_id"])
-
-    return tokens
-
-
-@app.post("/auth/tokens/{token}/rotate")
-async def rotate_token(
-    current_user: dict[str, Any] = Depends(get_current_user_from_path),
-) -> dict[str, str]:
-    """Rotate an auth token (create new, delete old)."""
-    from auth_db import rotate_user_token
-
-    new_token = rotate_user_token(current_user["user_id"])
-
-    if not new_token:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
-
+async def api_status() -> dict[str, bool]:
+    """API status endpoint for frontend checks."""
     return {
-        "token": new_token,
-        "message": "Token rotated successfully",
-        "instructions": "Use the new token with ?token= query parameter to access /rss",
+        "auth_enabled": False,
+        "authenticated": True,
+        "public": True,
     }
 
 
-@app.delete("/auth/user")
-async def delete_user(
-    current_user: dict[str, Any] = Depends(get_current_user),
-) -> dict[str, str]:
-    """Delete the current user and all associated data."""
-    from auth_db import delete_user
-
-    deleted = delete_user(current_user["user_id"])
-
-    if not deleted:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
-
-    return {"message": "User deleted successfully"}
-
-
 # =============================================================================
-# RSS Feed Endpoint (Protected)
+# RSS Feed Endpoint
 # =============================================================================
 
 
@@ -328,77 +204,17 @@ async def rss_feed(
         None, description="Categories to filter in (only these categories)"
     ),
     category_not_in: list[str] | None = Query(
-        None, alias="not_in", description="Categories to filter out (exclude these categories)"
+        None,
+        alias="not_in",
+        description="Categories to filter out (exclude these categories)",
     ),
-    current_user: dict[str, Any] | None = Depends(get_current_user_optional),
 ) -> Response:
-    """Generate and return RSS feed (requires authentication).
+    """Generate and return the public RSS feed.
 
     Query Parameters:
     - category_in: Filter to only include articles with these categories (e.g., ?category_in=通知&category_in=公告)
     - not_in: Exclude articles with these categories (e.g., ?not_in=招聘&not_in=讲座)
-    - token: Authentication token (required if OAuth enabled)
-
-    Authentication:
-    - Use ?token= query parameter
-    - Get a token by visiting /auth/login (GitLab OAuth)
-
-    Rate Limiting:
-    - Authenticated users: 1 request/second, 10 requests/hour
     """
-    if OAUTH_ENABLED and not current_user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authentication required. Visit /auth/login to authenticate",
-        )
-
-    # Apply per-user rate limiting for authenticated users
-    remaining_second = USER_RATE_LIMIT_PER_SECOND
-    remaining_hour = USER_RATE_LIMIT_PER_HOUR
-
-    if current_user:
-        user_id = current_user["user_id"]
-
-        # Check per-second rate limit
-        allowed_second, remaining_second = check_rate_limit(
-            user_id=user_id,
-            window_seconds=RATE_LIMIT_WINDOW_SECOND,
-            max_requests=USER_RATE_LIMIT_PER_SECOND,
-        )
-
-        if not allowed_second:
-            raise HTTPException(
-                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail="Rate limit exceeded: maximum 1 request per second",
-                headers={
-                    "X-RateLimit-Limit-Second": str(USER_RATE_LIMIT_PER_SECOND),
-                    "X-RateLimit-Remaining-Second": "0",
-                    "X-RateLimit-Limit-Hour": str(USER_RATE_LIMIT_PER_HOUR),
-                    "X-RateLimit-Remaining-Hour": str(remaining_hour),
-                    "Retry-After": "1",
-                },
-            )
-
-        # Check per-hour rate limit
-        allowed_hour, remaining_hour = check_rate_limit(
-            user_id=user_id,
-            window_seconds=RATE_LIMIT_WINDOW_HOUR,
-            max_requests=USER_RATE_LIMIT_PER_HOUR,
-        )
-
-        if not allowed_hour:
-            raise HTTPException(
-                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-                detail="Rate limit exceeded: maximum 10 requests per hour",
-                headers={
-                    "X-RateLimit-Limit-Second": str(USER_RATE_LIMIT_PER_SECOND),
-                    "X-RateLimit-Remaining-Second": str(remaining_second),
-                    "X-RateLimit-Limit-Hour": str(USER_RATE_LIMIT_PER_HOUR),
-                    "X-RateLimit-Remaining-Hour": "0",
-                    "Retry-After": "3600",
-                },
-            )
-
     # Validate category inputs
     category_in = validate_category_input(category_in)
     category_not_in = validate_category_input(category_not_in)
@@ -412,17 +228,6 @@ async def rss_feed(
     response_headers = {
         "Cache-Control": f"public, max-age={RSS_CACHE_MAX_AGE}",
     }
-
-    # Add rate limit headers if authenticated
-    if current_user:
-        response_headers.update(
-            {
-                "X-RateLimit-Limit-Second": str(USER_RATE_LIMIT_PER_SECOND),
-                "X-RateLimit-Remaining-Second": str(remaining_second),
-                "X-RateLimit-Limit-Hour": str(USER_RATE_LIMIT_PER_HOUR),
-                "X-RateLimit-Remaining-Hour": str(remaining_hour),
-            }
-        )
 
     return Response(
         content=rss_xml,

@@ -13,15 +13,8 @@ services:
     environment:
       # Database path (in mounted volume)
       - DB_PATH=/data/articles.db
-
-      # OAuth configuration (optional, enable if needed)
-      - OAUTH_ENABLED=${OAUTH_ENABLED:-true}
-      - GITLAB_CLIENT_ID=${GITLAB_CLIENT_ID:-}
-      - GITLAB_CLIENT_SECRET=${GITLAB_CLIENT_SECRET:-}
-      - GITLAB_REDIRECT_URI=${GITLAB_REDIRECT_URI:-}
-      - OAUTH_STATE_SECRET=${OAUTH_STATE_SECRET:-}
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health', timeout=5)"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5).read()"]
       interval: 30s
       timeout: 10s
       retries: 3

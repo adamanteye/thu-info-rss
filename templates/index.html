@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Info Tsinghua RSS</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.5;
+      margin: 0;
+      padding: 3rem 1.5rem;
+      color: #1f2937;
+      background: #f8fafc;
+    }
+
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 1rem;
+      font-size: 2rem;
+    }
+
+    a {
+      color: #0f766e;
+    }
+
+    input {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 0.7rem;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font: inherit;
+      background: white;
+    }
+
+    button {
+      margin-top: 0.75rem;
+      padding: 0.65rem 0.9rem;
+      border: 0;
+      border-radius: 6px;
+      font: inherit;
+      color: white;
+      background: #0f766e;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <h1>Info Tsinghua RSS</h1>
+    <p>这是公开 RSS 源，不需要 OAuth、登录或 token。</p>
+
+    <h2>订阅地址</h2>
+    <input id="feed-url" type="text" readonly>
+    <button type="button" onclick="copyFeedUrl()">复制</button>
+
+    <p><a href="/rss">直接打开 RSS</a> · <a href="/docs">API 文档</a></p>
+    <p>可用参数：<code>category_in</code> 仅包含指定分类，<code>not_in</code> 排除指定分类。</p>
+  </main>
+
+  <script>
+    const feedUrl = `${window.location.origin}/rss`;
+    document.getElementById("feed-url").value = feedUrl;
+
+    async function copyFeedUrl() {
+      await navigator.clipboard.writeText(feedUrl);
+    }
+  </script>
+</body>
+
+</html>

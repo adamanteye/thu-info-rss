@@ -25,7 +25,9 @@ USER_AGENT = f"{APP_NAME}/{APP_VERSION}"
 BASE_URL = "https://info.tsinghua.edu.cn"
 LIST_URL = f"{BASE_URL}/f/info/xxfb_fg/xnzx/template/more?lmid=all"
 LIST_API = f"{BASE_URL}/b/info/xxfb_fg/xnzx/template/more"
-DETAIL_URL_TEMPLATE = f"{BASE_URL}/f/info/xxfb_fg/xnzx/template/detail?xxid={{xxid}}"
+DETAIL_URL_TEMPLATE = (
+    f"{BASE_URL}/f/info/xxfb_fg/xnzx/template/detail?xxid={{xxid}}"
+)
 
 MIN_REQUEST_INTERVAL = 1.0 / 3.0  # 3 requests per second
 
@@ -75,26 +77,3 @@ SERVER_PORT = 8000
 # =============================================================================
 
 LIBRARY_ENCODINGS = ["utf-8-sig", "gbk", "gb2312", "gb18030", "utf-8"]
-
-
-# =============================================================================
-# OAuth Settings
-# =============================================================================
-
-OAUTH_ENABLED = os.getenv("OAUTH_ENABLED", "true").lower() == "true"
-GITLAB_URL = os.getenv("GITLAB_URL", "https://git.tsinghua.edu.cn")
-GITLAB_CLIENT_ID = os.getenv("GITLAB_CLIENT_ID", "")
-GITLAB_CLIENT_SECRET = os.getenv("GITLAB_CLIENT_SECRET", "")
-GITLAB_REDIRECT_URI = os.getenv("GITLAB_REDIRECT_URI", "http://localhost:8000/auth/callback")
-GITLAB_SCOPES = ["openid", "profile", "email"]
-SESSION_SECRET = os.getenv("SESSION_SECRET", "")
-
-
-# =============================================================================
-# Rate Limiting Settings
-# =============================================================================
-
-USER_RATE_LIMIT_PER_SECOND = 1
-USER_RATE_LIMIT_PER_HOUR = 10
-RATE_LIMIT_WINDOW_SECOND = 1
-RATE_LIMIT_WINDOW_HOUR = 3600
