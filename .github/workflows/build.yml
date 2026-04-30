@@ -1,0 +1,15 @@
+name: Build and Publish Image
+on:
+  push:
+    tags:
+      - '*.*.*'
+jobs:
+  build-and-push:
+    permissions:
+      contents: read
+      packages: write
+    uses: adamanteye/actions/.github/workflows/docker.yml@master
+    with:
+      name: ${{ github.event.repository.name }}
+      label: ${{ github.ref_name }}
+      owner: ${{ github.repository_owner }}
