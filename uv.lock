@@ -370,44 +370,6 @@ wheels = [
 ]
 
 [[package]]
-name = "info-scraper-rss"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "apscheduler" },
-    { name = "beautifulsoup4" },
-    { name = "fastapi" },
-    { name = "feedgenerator" },
-    { name = "python-dotenv" },
-    { name = "requests" },
-    { name = "uvicorn", extra = ["standard"] },
-]
-
-[package.optional-dependencies]
-dev = [
-    { name = "pre-commit" },
-    { name = "ruff" },
-]
-explore = [
-    { name = "playwright" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "apscheduler", specifier = ">=3.10.4" },
-    { name = "beautifulsoup4", specifier = ">=4.12.0" },
-    { name = "fastapi", specifier = ">=0.109.0" },
-    { name = "feedgenerator", specifier = ">=2.1.0" },
-    { name = "playwright", marker = "extra == 'explore'", specifier = ">=1.40.0" },
-    { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=2.20.0" },
-    { name = "python-dotenv", specifier = ">=1.0.0" },
-    { name = "requests", specifier = ">=2.31.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8.0" },
-    { name = "uvicorn", extras = ["standard"], specifier = ">=0.27.0" },
-]
-provides-extras = ["dev", "explore"]
-
-[[package]]
 name = "nodeenv"
 version = "1.10.0"
 source = { registry = "https://pypi.org/simple" }
@@ -740,6 +702,44 @@ sdist = { url = "https://files.pythonhosted.org/packages/ba/b8/73a0e6a6e079a9d9c
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d9/52/1064f510b141bd54025f9b55105e26d1fa970b9be67ad766380a3c9b74b0/starlette-0.50.0-py3-none-any.whl", hash = "sha256:9e5391843ec9b6e472eed1365a78c8098cfceb7a74bfd4d6b1c0c0095efb3bca", size = 74033, upload-time = "2025-11-01T15:25:25.461Z" },
 ]
+
+[[package]]
+name = "thu-info-rss"
+version = "0.1.2"
+source = { editable = "." }
+dependencies = [
+    { name = "apscheduler" },
+    { name = "beautifulsoup4" },
+    { name = "fastapi" },
+    { name = "feedgenerator" },
+    { name = "python-dotenv" },
+    { name = "requests" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "pre-commit" },
+    { name = "ruff" },
+]
+explore = [
+    { name = "playwright" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "apscheduler", specifier = ">=3.10.4" },
+    { name = "beautifulsoup4", specifier = ">=4.12.0" },
+    { name = "fastapi", specifier = ">=0.109.0" },
+    { name = "feedgenerator", specifier = ">=2.1.0" },
+    { name = "playwright", marker = "extra == 'explore'", specifier = ">=1.40.0" },
+    { name = "pre-commit", marker = "extra == 'dev'", specifier = ">=2.20.0" },
+    { name = "python-dotenv", specifier = ">=1.0.0" },
+    { name = "requests", specifier = ">=2.31.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.8.0" },
+    { name = "uvicorn", extras = ["standard"], specifier = ">=0.27.0" },
+]
+provides-extras = ["dev", "explore"]
 
 [[package]]
 name = "typing-extensions"
